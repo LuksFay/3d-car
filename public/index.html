@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beat 'em Up Game</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #controls { position: absolute; top: 10px; left: 10px; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button id="moveLeftButton">Move Left</button>
+        <button id="moveRightButton">Move Right</button>
+        <button id="punchButton">Punch</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Setup scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create background
+        const backgroundGeometry = new THREE.PlaneGeometry(10, 10, 10);
+        const backgroundMaterial = new THREE.MeshBasicMaterial({ color: 0x0088ff });
+        const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+        backgroundMesh.position.set(0, 0, -10); // Move it behind the player
+        scene.add(backgroundMesh);
+
+        // Create player
+        const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const player = new THREE.Mesh(playerGeometry, playerMaterial);
+        player.position.set(0, -1, 0); // Start slightly above the ground
+        scene.add(player);
+
+        // Create enemies
+        const enemies = [];
+        const enemyGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const enemyMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        for (let i = 0; i < 5; i++) {
+            const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
+            enemy.position.set(Math.random() * 8 - 4, -1, Math.random() * -5);
+            enemies.push(enemy);
+            scene.add(enemy);
+        }
+
+        // Move player function
+        function movePlayer(direction) {
+            if (direction === 'left') {
+                player.position.x -= 0.1;
+            } else if (direction === 'right') {
+                player.position.x += 0.1;
+            }
+        }
+
+        // Event listeners for buttons
+        document.getElementById('moveLeftButton').addEventListener('click', () => movePlayer('left'));
+        document.getElementById('moveRightButton').addEventListener('click', () => movePlayer('right'));
+
+        // Punch function
+        function punch() {
+            // Check for collisions with enemies
+            for (let i = 0; i < enemies.length; i++) {
+                const distance = player.position.distanceTo(enemies[i].position);
+                if (distance < 1) {
+                    scene.remove(enemies[i]);
+                    enemies.splice(i, 1);
+                }
+            }
+        }
+
+        // Event listener for punch button
+        document.getElementById('punchButton').addEventListener('click', punch);
+
+        // Setup camera position
+        camera.position.z = 5;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
